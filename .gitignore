@@ -1,0 +1,9 @@
+# Secret reel : ne jamais pousser sur GitHub/GitLab (seul le .example est versionne)
+k8s/02-secret.yaml
+*.secret.yaml
+
+# Fichiers systeme et editeur
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

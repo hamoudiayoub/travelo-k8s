@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: travelo-frontend
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-frontend
+    app.kubernetes.io/part-of: travelo
+spec:
+  selector:
+    app: travelo-frontend
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelo-frontend
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-frontend
+    app.kubernetes.io/part-of: travelo
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: travelo-frontend
+  template:
+    metadata:
+      labels:
+        app: travelo-frontend
+        tier: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: travelo-frontend:2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

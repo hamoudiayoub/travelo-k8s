@@ -1,0 +1,15 @@
+# Q3.b : pod demandant 2 CPU -> refuse par le LimitRange (max 1 CPU par conteneur)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: greedy-test
+  namespace: travelo
+spec:
+  containers:
+    - name: busybox
+      image: busybox:1.36
+      args: ["sleep", "3600"]
+      resources:
+        limits:
+          cpu: "2"
+          memory: 256Mi

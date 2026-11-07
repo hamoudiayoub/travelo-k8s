@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: travelo-backend
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-backend
+    app.kubernetes.io/part-of: travelo
+spec:
+  selector:
+    app: travelo-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelo-backend
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-backend
+    app.kubernetes.io/part-of: travelo
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: travelo-backend
+  template:
+    metadata:
+      labels:
+        app: travelo-backend
+        tier: backend
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: mysql:8.4
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "until mysqladmin ping -h travelo-database --silent; do echo 'En attente de MySQL...'; sleep 3; done"]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      containers:
+        - name: backend
+          image: travelo-backend:2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: travelo-config
+          env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: travelo-secret
+                  key: MYSQL_PASSWORD
+          startupProbe:
+            httpGet:
+              path: /api/hello
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet:
+              path: /api/hello
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/hello
+              port: http
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 150m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi

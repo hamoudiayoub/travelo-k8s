@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-exec-demo
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: liveness-demo
+    app.kubernetes.io/part-of: travelo
+spec:
+  containers:
+    - name: liveness
+      image: busybox:1.36
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+      livenessProbe:
+        exec:
+          command:
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 5
+        periodSeconds: 5

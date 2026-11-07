@@ -1,0 +1,29 @@
+# Question 3.d : haute disponibilite lors des perturbations volontaires
+# Au moins une replique du backend et du frontend doit rester disponible
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: travelo-backend-pdb
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-backend-pdb
+    app.kubernetes.io/part-of: travelo
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: travelo-backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: travelo-frontend-pdb
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-frontend-pdb
+    app.kubernetes.io/part-of: travelo
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: travelo-frontend

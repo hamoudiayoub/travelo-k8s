@@ -1,0 +1,11 @@
+# Q3.b : pod SANS section resources -> le LimitRange injecte les valeurs par defaut
+apiVersion: v1
+kind: Pod
+metadata:
+  name: defaults-test
+  namespace: travelo
+spec:
+  containers:
+    - name: busybox
+      image: busybox:1.36
+      args: ["sleep", "3600"]

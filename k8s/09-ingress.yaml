@@ -1,0 +1,32 @@
+# Question 3.f : point d'entree HTTP unique, routage par nom d'hote
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: travelo-ingress
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-ingress
+    app.kubernetes.io/part-of: travelo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: frontend.exam.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: travelo-frontend
+                port:
+                  number: 3000
+    - host: backend.exam.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: travelo-backend
+                port:
+                  number: 8080

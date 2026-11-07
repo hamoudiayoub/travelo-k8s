@@ -1,0 +1,48 @@
+# Question 3.c : controle d'acces a moindre privilege (RBAC)
+# Profil "developpeur" : consultation + mise a l'echelle, sans modification ni acces aux Secrets
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: travelo-dev
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-dev
+    app.kubernetes.io/part-of: travelo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: travelo-developer
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-developer
+    app.kubernetes.io/part-of: travelo
+rules:
+  # Lecture des objets applicatifs (les Secrets sont volontairement absents)
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "endpoints", "configmaps", "persistentvolumeclaims", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+  # Seule ecriture autorisee : ajuster le nombre de repliques
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale"]
+    verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: travelo-developer-binding
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-developer-binding
+    app.kubernetes.io/part-of: travelo
+subjects:
+  - kind: ServiceAccount
+    name: travelo-dev
+    namespace: travelo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: travelo-developer

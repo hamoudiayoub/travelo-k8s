@@ -1,0 +1,45 @@
+# Question 3.b : gouvernance des ressources du namespace travelo
+# - LimitRange     : valeurs par defaut + bornes par conteneur / par pod
+# - ResourceQuota  : budget cumule de tout le namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: travelo-limits
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-limits
+    app.kubernetes.io/part-of: travelo
+spec:
+  limits:
+    - type: Container
+      defaultRequest:          # injecte si le conteneur ne declare pas de requests
+        cpu: 25m
+        memory: 32Mi
+      default:                 # injecte si le conteneur ne declare pas de limits
+        cpu: 200m
+        memory: 128Mi
+      max:                     # aucun conteneur ne peut depasser
+        cpu: "1"
+        memory: 1Gi
+    - type: Pod
+      max:
+        cpu: "1"
+        memory: 1Gi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: travelo-quota
+  namespace: travelo
+  labels:
+    app.kubernetes.io/name: travelo-quota
+    app.kubernetes.io/part-of: travelo
+spec:
+  hard:
+    pods: "12"
+    requests.cpu: "1"
+    requests.memory: 2Gi
+    limits.cpu: "5"
+    limits.memory: 4Gi
+    persistentvolumeclaims: "2"
+    requests.storage: 5Gi
